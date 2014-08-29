@@ -47,6 +47,10 @@ module.exports = function (grunt) {
             gruntfile: {
                 files: ['Gruntfile.js']
             },
+            handlebars: {
+                files: ['app/templates/**/*.hbs'],
+                tasks: ['handlebars']
+            },
             sass: {
                 files: ['<%= config.app %>/styles/{,*/}*.{scss,sass}'],
                 tasks: ['sass:server', 'autoprefixer']
@@ -340,6 +344,7 @@ module.exports = function (grunt) {
         // Run some tasks in parallel to speed up build process
         concurrent: {
             server: [
+                'handlebars',
                 'sass:server',
                 'copy:styles'
             ],
@@ -347,6 +352,7 @@ module.exports = function (grunt) {
                 'copy:styles'
             ],
             dist: [
+                'handlebars',
                 'sass',
                 'copy:styles',
                 'imagemin',
@@ -362,7 +368,21 @@ module.exports = function (grunt) {
             sass: {
                 src: ['<%= config.app %>/styles/{,*/}*.{scss,sass}']
             }
+        },
 
+        handlebars: {
+            compile: {
+                options: {
+                    wrapped: true,
+                    processName: function(filePath) {
+                        var pieces = filePath.split('/');
+                        return pieces[pieces.length - 1].split('.')[0];
+                    }
+                },
+                files: {
+                    '.tmp/templates/compiled.js': '<%= config.app %>/templates/**/*.hbs'
+                }
+            }
         }
     });
 

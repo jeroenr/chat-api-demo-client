@@ -1,1 +1,6 @@
 @import "bootstrap-custom/variables";
+// bower:scss
+@import "../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap.scss";
+// endbower
+
+@import "bootstrap-custom/proximanova";
