@@ -374,7 +374,7 @@ module.exports = function (grunt) {
             compile: {
                 options: {
                     wrapped: true,
-                    processName: function(filePath) {
+                    processName: function (filePath) {
                         var pieces = filePath.split('/');
                         return pieces[pieces.length - 1].split('.')[0];
                     }

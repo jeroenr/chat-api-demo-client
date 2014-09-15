@@ -1,4 +1,7 @@
-$(function(){
+'use strict';
+/* global JST */
+/* global ChatSavvy */
+$(function () {
     var FADE_TIME = 150; // ms
 
     var $usernameInput = $('.usernameInput');
@@ -13,29 +16,64 @@ $(function(){
     var $currentInput = $usernameInput.focus();
 
     var username;
+    var client;
+    var currentRoom;
 
     function cleanInput(input) {
         return $('<div/>').text(input).text();
     }
-    // Sets the client's username
-    function setUsername () {
-        username = cleanInput($usernameInput.val().trim());
 
-        // If the username is valid
-        if (username) {
+    // Sets the client's username
+    function setupPrimus(data) {
+        var url = 'https://alpha.fromamsterdamwithlove.net?' + $.param(data);
+        client = Primus.connect(url)
+
+        client.on('open', function () {
             $loginPage.fadeOut();
             $chatPage.show();
             $loginPage.off('click');
             $currentInput = $messageInput.focus();
+
+            currentRoom = 'general';
+            client.send('join', {room: currentRoom}, function (room) {
+                console.log('Joined room: ' + room);
+            });
+        });
+
+        client.on('message', function (msg, callback) {
+            addChatMessage(msg);
+            console.log("Msg " + msg + " received");
+            callback && callback(msg.id);
+        });
+    }
+
+    function setUsername() {
+        username = cleanInput($usernameInput.val().trim());
+
+        // If the username is valid
+        if (username) {
+            $.ajax(
+                'https://alpha.fromamsterdamwithlove.net/demo/' + username + '/token',
+                {
+                    success: function (data) {
+                        setupPrimus(data);
+                    },
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa('pcampus:J6IpR|4q'));
+                    }
+                });
         }
     }
 
     function sendMessage() {
         var message = $messageInput.val();
         message = cleanInput(message);
-        if(message) {
+        if (message) {
+            client.send('msgtoroom', {message: message, room: currentRoom}, function(success) {
+                console.log('send message ('+message+') successfull: '+success);
+            });
             $messageInput.val('');
-            addChatMessage({username:username, message:message});
+            addChatMessage({username: username, message: message});
         }
     }
 
@@ -73,10 +111,10 @@ $(function(){
         }
         // When the client hits ENTER on their keyboard
         if (event.which === 13) {
-            if($loginPage.is(':visible')) {
+            if ($loginPage.is(':visible')) {
                 console.log('logging in');
                 setUsername();
-            } else if($chatPage.is(':visible')) {
+            } else if ($chatPage.is(':visible')) {
                 console.log('sending message');
                 sendMessage();
             }
