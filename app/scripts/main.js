@@ -38,6 +38,10 @@ $(function () {
             client.send('join', {room: currentRoom}, function (room) {
                 console.log('Joined room: ' + room);
             });
+
+            client.send('listrooms', {}, function(rooms) {
+                console.log('rooms: '+ rooms);
+            });
         });
 
         client.on('message', function (msg, callback) {
@@ -73,7 +77,6 @@ $(function () {
                 console.log('send message ('+message+') successfull: '+success);
             });
             $messageInput.val('');
-            addChatMessage({username: username, message: message});
         }
     }
 
